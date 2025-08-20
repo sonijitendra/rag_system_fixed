@@ -1,6 +1,7 @@
 import logging
 from flask import Blueprint, request, render_template, jsonify, flash
 from services.rag_service import RAGService
+from services.llm_service import ask_llm
 
 logger = logging.getLogger(__name__)
 
@@ -32,18 +33,25 @@ def query_documents():
         # Validate k parameter
         k = max(1, min(k, 20))  # Limit k between 1 and 20
         
-        # Process query
+        # Process query: get context from RAG
         rag_service = RAGService()
-        result = rag_service.query(question, k=k)
-        
+        retrieval_result = rag_service.query(question, k=k)
+
+        # Build prompt for LLM
+        context = retrieval_result.get("context", "")
+        final_answer = ask_llm(f"Context: {context}\n\nUser question: {question}")
+
+        # Add LLM answer into result
+        retrieval_result["llm_answer"] = final_answer
+
         if request.is_json:
-            return jsonify(result)
+            return jsonify(retrieval_result)
         
         # For web interface, add the question to the result for display
-        result['question'] = question
-        result['k_used'] = k
+        retrieval_result['question'] = question
+        retrieval_result['k_used'] = k
         
-        return render_template('query.html', result=result)
+        return render_template('query.html', result=retrieval_result)
         
     except Exception as e:
         logger.error(f"Query error: {e}")
@@ -74,9 +82,15 @@ def api_query():
         k = max(1, min(int(k), 20))
         
         rag_service = RAGService()
-        result = rag_service.query(question, k=k)
-        
-        return jsonify(result)
+        retrieval_result = rag_service.query(question, k=k)
+
+        # Build prompt for LLM
+        context = retrieval_result.get("context", "")
+        final_answer = ask_llm(f"Context: {context}\n\nUser question: {question}")
+
+        retrieval_result["llm_answer"] = final_answer
+
+        return jsonify(retrieval_result)
         
     except ValueError as e:
         return jsonify({'error': f'Invalid parameter: {str(e)}'}), 400
@@ -94,3 +108,4 @@ def system_status():
     except Exception as e:
         logger.error(f"Status check error: {e}")
         return jsonify({'error': str(e)}), 500
+
