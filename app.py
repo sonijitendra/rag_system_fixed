@@ -1,5 +1,7 @@
 import os
 import logging
+import google.generativeai as genai
+
 from extensions import db
 from flask import Flask, render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
