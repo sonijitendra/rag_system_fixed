@@ -1,0 +1,10 @@
+flask
+flask_sqlalchemy
+sqlalchemy
+gunicorn
+openai
+faiss-cpu
+PyPDF2
+python-docx
+pytest
+requests

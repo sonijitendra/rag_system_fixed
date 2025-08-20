@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual envs
+venv/
+.venv/
+env/
+ENV/
+
+# VS Code & OS junk
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Secrets / Env
+.env
+*.env
+secrets*.json
+
+# Data folders (keep empty with .gitkeep)
+data/*
+!data/.gitkeep
+uploads/*
+!uploads/.gitkeep
+vector_db/*
+!vector_db/.gitkeep
+instance/*
+!instance/.gitkeep
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/

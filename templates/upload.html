@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Documents - RAG System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i data-feather="upload" class="me-2"></i>
+                    Upload Documents
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-4">
+                        <label for="files" class="form-label">Select Documents</label>
+                        <input type="file" class="form-control" id="files" name="files" 
+                               multiple accept=".pdf,.txt,.docx,.doc" required>
+                        <div class="form-text">
+                            Supported formats: PDF, TXT, DOCX, DOC. Max 20 files, 1000 pages each.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
+                            <i data-feather="upload" class="me-2"></i>
+                            Upload Documents
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Upload Progress -->
+                <div id="uploadProgress" class="mt-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Processing documents...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Upload Guidelines
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Supported Formats</h6>
+                        <ul class="list-unstyled">
+                            <li><i data-feather="file" class="me-2 text-danger"></i> PDF files</li>
+                            <li><i data-feather="file-text" class="me-2 text-primary"></i> Text files (.txt)</li>
+                            <li><i data-feather="file-text" class="me-2 text-info"></i> Word documents (.docx, .doc)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Limits</h6>
+                        <ul class="list-unstyled">
+                            <li><i data-feather="hash" class="me-2 text-warning"></i> Maximum 20 files per upload</li>
+                            <li><i data-feather="layers" class="me-2 text-success"></i> Maximum 1000 pages per document</li>
+                            <li><i data-feather="hard-drive" class="me-2 text-info"></i> Maximum 100MB file size</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Results -->
+        {% if processed_files or errors %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="check-circle" class="me-2"></i>
+                    Processing Results
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if processed_files %}
+                <h6 class="text-success">Successfully Processed Files</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Size</th>
+                                <th>Chunks</th>
+                                <th>Est. Pages</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in processed_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ "%.1f"|format(file.file_size / 1024 / 1024) }} MB</td>
+                                <td>{{ file.chunks_created }}</td>
+                                <td>{{ file.estimated_pages }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                {% if errors %}
+                <h6 class="text-danger mt-3">Errors</h6>
+                <ul class="list-group list-group-flush">
+                    {% for error in errors %}
+                    <li class="list-group-item list-group-item-danger">
+                        <i data-feather="alert-circle" class="me-2"></i>
+                        {{ error }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const files = document.getElementById('files').files;
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadProgress = document.getElementById('uploadProgress');
+    
+    if (files.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one file to upload.');
+        return;
+    }
+    
+    if (files.length > 20) {
+        e.preventDefault();
+        alert('Maximum 20 files allowed per upload.');
+        return;
+    }
+    
+    // Show progress and disable button
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    uploadProgress.style.display = 'block';
+    
+    // Simulate progress (since we can't track real progress easily)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress > 90) progress = 90;
+        
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('progressText').textContent = Math.round(progress) + '%';
+    }, 500);
+    
+    // Clear interval when form actually submits
+    setTimeout(() => clearInterval(progressInterval), 100);
+});
+
+// File validation
+document.getElementById('files').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const allowedTypes = ['.pdf', '.txt', '.docx', '.doc'];
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    
+    for (let file of files) {
+        const extension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(extension)) {
+            alert(`File ${file.name} has unsupported format. Allowed: PDF, TXT, DOCX, DOC`);
+            e.target.value = '';
+            return;
+        }
+        
+        if (file.size > maxSize) {
+            alert(`File ${file.name} is too large. Maximum size: 100MB`);
+            e.target.value = '';
+            return;
+        }
+    }
+});
+</script>
+{% endblock %}

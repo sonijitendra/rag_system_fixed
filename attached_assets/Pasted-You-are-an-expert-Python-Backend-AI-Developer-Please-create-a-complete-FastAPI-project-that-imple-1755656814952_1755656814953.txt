@@ -1,0 +1,107 @@
+You are an expert Python Backend + AI Developer.
+Please create a complete FastAPI project that implements a Retrieval Augmented Generation (RAG) system as per the following requirements:
+
+📌 Project Requirements
+1. Upload & Store Documents
+
+Create an endpoint /upload (POST) where users can upload up to 20 documents (PDF, TXT, DOCX).
+
+Each document can have a maximum of 1000 pages.
+
+Split documents into chunks (e.g., 500 tokens each with overlap).
+
+Generate embeddings using OpenAI Embeddings API (or HuggingFace embeddings if no API key is provided).
+
+Store chunks in a vector database (FAISS or Chroma).
+
+Store metadata (filename, upload time, document ID, page number) in a SQLite database.
+
+2. Query Processing
+
+Create an endpoint /query (POST) where users send a question.
+
+Retrieve the top-k most relevant chunks from the vector database (default: k=5).
+
+Pass retrieved context + user query to an LLM (OpenAI GPT-4 or HuggingFace model).
+
+Return a structured JSON response:
+
+{
+  "answer": "The generated response here...",
+  "sources": [
+    {"filename": "doc1.pdf", "page": 12},
+    {"filename": "doc2.txt", "page": 3}
+  ]
+}
+
+3. Metadata Access
+
+Create an endpoint /metadata (GET) to return a list of uploaded documents with:
+
+document ID
+
+filename
+
+number of chunks stored
+
+upload date
+
+4. Deployment & Infrastructure
+
+Write a Dockerfile to containerize the app.
+
+Write a docker-compose.yml (with service for FastAPI + volume for vector DB + SQLite).
+
+Ensure the app can run with docker-compose up.
+
+5. Testing & Documentation
+
+Write unit tests for:
+
+Document chunking
+
+Embedding generation
+
+Query retrieval
+
+Write a clear README.md with:
+
+Setup instructions
+
+How to run locally
+
+How to run with Docker
+
+Example API requests (with curl / Postman JSON examples)
+
+📌 Tech Stack
+
+Backend: FastAPI (Python)
+
+Vector DB: FAISS or Chroma
+
+Metadata DB: SQLite (SQLAlchemy ORM)
+
+Embeddings: OpenAI or HuggingFace
+
+LLM for responses: OpenAI GPT / HuggingFace LLM
+
+Deployment: Docker + docker-compose
+
+🔑 Notes
+
+Handle cases when no relevant chunk is found (return “No relevant information found”).
+
+Add pagination for /metadata if many docs are uploaded.
+
+Code must follow clean architecture (separate services: ingestion, retrieval, api, db).
+
+⚡ Deliverables:
+
+Complete FastAPI project with all endpoints working
+
+Dockerized deployment
+
+README with usage guide
+
+Unit tests included

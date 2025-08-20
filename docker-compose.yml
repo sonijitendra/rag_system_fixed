@@ -1,0 +1,15 @@
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SESSION_SECRET=${SESSION_SECRET:-change-me}
+      - DATABASE_URL=sqlite:////app/data/rag_system.db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./vector_db:/app/vector_db
+      - ./data:/app/data
+
