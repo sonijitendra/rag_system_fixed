@@ -1,197 +1,42 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RAG Query</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+  <header>
+    <h1>Ask Documents</h1>
+  </header>
 
-{% block title %}Query Documents - RAG System{% endblock %}
+  <main>
+    <form method="POST" action="/query">
+      <label for="question">Enter your question:</label>
+      <input type="text" name="question" id="question" required placeholder="Type your question here...">
+      
+      <label for="k">Number of docs (k):</label>
+      <input type="number" name="k" id="k" value="5" min="1" max="20">
+      
+      <button type="submit">Ask</button>
+    </form>
 
-{% block content %}
-<div class="row">
-    <div class="col-lg-10 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i data-feather="search" class="me-2"></i>
-                    Ask Questions About Your Documents
-                </h4>
-            </div>
-            <div class="card-body">
-                <form method="POST" id="queryForm">
-                    <div class="mb-3">
-                        <label for="question" class="form-label">Your Question</label>
-                        <textarea class="form-control" id="question" name="question" rows="3" 
-                                  placeholder="Ask a question about your uploaded documents..."
-                                  required>{% if result %}{{ result.question }}{% endif %}</textarea>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="k" class="form-label">Number of sources to search</label>
-                            <select class="form-select" id="k" name="k">
-                                <option value="3">3 sources</option>
-                                <option value="5" selected>5 sources</option>
-                                <option value="10">10 sources</option>
-                                <option value="15">15 sources</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success btn-lg" id="queryBtn">
-                            <i data-feather="search" class="me-2"></i>
-                            Get Answer
-                        </button>
-                    </div>
-                </form>
-            </div>
+    {% if result %}
+      <section>
+        <h2>Query Result</h2>
+        <p><strong>Question:</strong> {{ result.question }}</p>
+        <p><strong>k used:</strong> {{ result.k_used }}</p>
+        
+        <h3>Retrieved Context</h3>
+        <pre>{{ result.context }}</pre>
+
+        <h3>LLM Answer</h3>
+        <div style="background:#f4f4f4; padding:1em; border-radius:8px;">
+          {{ result.llm_answer }}
         </div>
+      </section>
+    {% endif %}
+  </main>
+</body>
+</html>
 
-        <!-- Query Result -->
-        {% if result %}
-        <div class="card mt-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i data-feather="message-circle" class="me-2"></i>
-                    Answer
-                </h5>
-                <div class="text-muted small">
-                    {% if result.context_used %}
-                        <i data-feather="check-circle" class="text-success me-1"></i>
-                        {{ result.chunks_retrieved }} sources found
-                    {% else %}
-                        <i data-feather="alert-circle" class="text-warning me-1"></i>
-                        No relevant sources
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="answer-content">
-                    {{ result.answer }}
-                </div>
-                
-                {% if result.sources %}
-                <div class="mt-4">
-                    <h6>Sources:</h6>
-                    <div class="row">
-                        {% for source in result.sources %}
-                        <div class="col-md-6 mb-2">
-                            <div class="border rounded p-2 small">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i data-feather="file" class="me-1"></i>
-                                        <strong>{{ source.filename }}</strong>
-                                    </div>
-                                    <span class="text-muted">Page {{ source.page }}</span>
-                                </div>
-                                {% if source.similarity_score %}
-                                <div class="text-muted small mt-1">
-                                    Relevance: {{ "%.1f"|format(source.similarity_score * 100) }}%
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Query Tips -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i data-feather="lightbulb" class="me-2"></i>
-                    Query Tips
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Good Questions</h6>
-                        <ul class="list-unstyled">
-                            <li><i data-feather="check" class="me-2 text-success"></i> Specific factual questions</li>
-                            <li><i data-feather="check" class="me-2 text-success"></i> Questions about document content</li>
-                            <li><i data-feather="check" class="me-2 text-success"></i> Requests for summaries or explanations</li>
-                            <li><i data-feather="check" class="me-2 text-success"></i> Comparisons between concepts</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Example Questions</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <code class="small">"What are the main benefits of renewable energy?"</code>
-                            </li>
-                            <li class="mb-2">
-                                <code class="small">"How does the new policy affect small businesses?"</code>
-                            </li>
-                            <li class="mb-2">
-                                <code class="small">"What are the key findings from the research?"</code>
-                            </li>
-                            <li class="mb-2">
-                                <code class="small">"Summarize the financial performance section"</code>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.getElementById('queryForm').addEventListener('submit', function(e) {
-    const question = document.getElementById('question').value.trim();
-    const queryBtn = document.getElementById('queryBtn');
-    
-    if (!question) {
-        e.preventDefault();
-        alert('Please enter a question.');
-        return;
-    }
-    
-    // Show loading state
-    queryBtn.disabled = true;
-    queryBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Searching...';
-});
-
-// Auto-resize textarea
-document.getElementById('question').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
-});
-
-// Example questions
-const exampleQuestions = [
-    "What are the main topics covered in the documents?",
-    "Can you summarize the key findings?",
-    "What recommendations are mentioned?",
-    "How does this relate to current trends?",
-    "What are the benefits and drawbacks discussed?"
-];
-
-// Add click handlers for example questions
-document.addEventListener('DOMContentLoaded', function() {
-    // Add example question buttons (you can uncomment if you want them)
-    /*
-    const exampleContainer = document.createElement('div');
-    exampleContainer.className = 'mt-3';
-    exampleContainer.innerHTML = '<small class="text-muted">Try these examples:</small>';
-    
-    exampleQuestions.forEach(question => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn btn-outline-secondary btn-sm me-2 mb-2';
-        btn.textContent = question;
-        btn.onclick = () => {
-            document.getElementById('question').value = question;
-            document.getElementById('question').focus();
-        };
-        exampleContainer.appendChild(btn);
-    });
-    
-    document.querySelector('.card-body').appendChild(exampleContainer);
-    */
-});
-</script>
-{% endblock %}
