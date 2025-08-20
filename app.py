@@ -26,7 +26,8 @@ def create_app():
     # Create upload directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs('vector_db', exist_ok=True)
-    os.makedirs('/app/data', exist_ok=True)  
+     os.makedirs("/tmp", exist_ok=True)
+  
 
     # Initialize extensions
     db.init_app(app)
