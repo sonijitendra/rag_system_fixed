@@ -1,7 +1,7 @@
 import os
 import logging
-from openai import OpenAI
-from openai import APIError, RateLimitError
+from genai import genai
+from genai import APIError, RateLimitError
 
 
 USE_DUMMY = os.environ.get("USE_DUMMY_LLM", "false").lower() == "true"
@@ -9,9 +9,9 @@ USE_DUMMY = os.environ.get("USE_DUMMY_LLM", "false").lower() == "true"
 client = None
 if not USE_DUMMY:
     try:
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        client = genai(api_key=os.environ.get("GEN_API_KEY"))
     except Exception as e:
-        logging.error(f"Failed to init OpenAI client: {e}")
+        logging.error(f"Failed to init genai client: {e}")
         USE_DUMMY = True
 
 
