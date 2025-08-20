@@ -13,21 +13,20 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # Configure database
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///rag_system.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:////tmp/rag_system.db")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
     }
-    
+
     # Configure upload settings
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
     app.config['UPLOAD_FOLDER'] = 'uploads'
-    
-    # Create upload directory if it doesn't exist
+
+    # ✅ Ensure required directories exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs('vector_db', exist_ok=True)
-     os.makedirs("/tmp", exist_ok=True)
-  
+    os.makedirs('/tmp', exist_ok=True)   # safe place for DB in Render free tier
 
     # Initialize extensions
     db.init_app(app)
@@ -36,12 +35,12 @@ def create_app():
         # Import models to ensure tables are created
         import models
         db.create_all()
-        
+
         # Register blueprints
         from routes.upload import upload_bp
         from routes.query import query_bp
         from routes.metadata import metadata_bp
-        
+
         app.register_blueprint(upload_bp)
         app.register_blueprint(query_bp)
         app.register_blueprint(metadata_bp)
@@ -58,4 +57,4 @@ if __name__ == "__main__":
     app = create_app()
     port = int(os.environ.get("PORT", 8080))
     print(f"🚀 Starting Flask app on http://0.0.0.0:{port}")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
