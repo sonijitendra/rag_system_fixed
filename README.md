@@ -1,4 +1,4 @@
-# RAG System by PanScience
+# RAG System 
 
 This project implements a Retrieval-Augmented Generation (RAG) system allowing users to upload documents, index them using embeddings, and ask questions grounded in those documents.
 
