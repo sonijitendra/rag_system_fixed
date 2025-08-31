@@ -2,6 +2,9 @@
 
 This project implements a Retrieval-Augmented Generation (RAG) system allowing users to upload documents, index them using embeddings, and ask questions grounded in those documents.
 
+# Deploy Link
+https://rag-system-fixed.onrender.com
+
 ## Features
 - Upload up to 20 documents (PDF, TXT, DOCX).
 - Chunking, embedding (OpenAI), and storage in a FAISS vector index.
